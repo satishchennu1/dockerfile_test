@@ -1,18 +1,30 @@
-#FROM buildpack-deps:jessie-curl
-FROM alpine:3.11
-ENV VERSION=v14.1.0 NPM_VERSION=6 YARN_VERSION=latest
-USER root
-WORKDIR /home/app
-COPY ./package.json /home/app/package.json
-RUN set -ex \
-RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - \
+FROM buildpack-deps:jessie-scm
+
+RUN set -x \
+    && curl -sL https://deb.nodesource.com/setup_8.x | bash - \
     && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
     && echo 'deb http://dl.google.com/linux/chrome/deb/ stable main' > /etc/apt/sources.list.d/google.list \
     && apt-get update \
-    && apt-get install -y nodejs xvfb google-chrome-stable bzip2 curl python python-dev python-setuptools build-essential libssl-dev libffi-dev unzip python-pip python3-pip \
+    && apt-get install -y \
+        nodejs \
+        xvfb \
+        google-chrome-stable \
+        bzip2 \
+        curl \
+        python \
+        python-dev \
+        python-setuptools \
+        build-essential \
+        libssl-dev \
+        libffi-dev \
+        unzip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    && easy_install pip \
     && pip install ansible boto boto3 awscli \
+
+ADD scripts/xvfb-chrome /usr/bin/xvfb-chrome
+RUN ln -sf /usr/bin/xvfb-chrome /usr/bin/google-chrome \
     && npm install -g @angular/cli --unsafe-perm \
     && npm install -g istanbul \
     && npm install -g jasmine-node \
@@ -23,6 +35,7 @@ RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - \
     && npm install -g karma-chrome-launcher \
     && npm install -g karma-jasmine \
     && npm install -g typescript
-ADD scripts/xvfb-chrome /usr/bin/xvfb-chrome \
-ENV CHROME_BIN /usr/bin/google-chrome \
-RUN ln -sf /usr/bin/xvfb-chrome /usr/bin/google-chrome
+
+ENV CHROME_BIN /usr/bin/google-chrome
+
+USER root

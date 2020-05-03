@@ -1,18 +1,16 @@
-#FROM buildpack-deps:jessie-curl
-FROM alpine:3.11
-ENV VERSION=v14.1.0 NPM_VERSION=6 YARN_VERSION=latest
+FROM buildpack-deps:jessie-curl
 USER root
-WORKDIR /home/app
-COPY ./package.json /home/app/package.json
 RUN set -ex \
-RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - \
+RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
     && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
     && echo 'deb http://dl.google.com/linux/chrome/deb/ stable main' > /etc/apt/sources.list.d/google.list \
     && apt-get update \
     && apt-get install -y nodejs xvfb google-chrome-stable bzip2 curl python python-dev python-setuptools build-essential libssl-dev libffi-dev unzip python-pip python3-pip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    && easy_install pip \
     && pip install ansible boto boto3 awscli \
+    && npm install --unsafe-perm -g \
     && npm install -g @angular/cli --unsafe-perm \
     && npm install -g istanbul \
     && npm install -g jasmine-node \
